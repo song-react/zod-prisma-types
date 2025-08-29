@@ -81,11 +81,11 @@ export const writeOutputObjectType = (
         )
         .conditionalWriteLine(
           field.writeIncludeArg && !useMultipleFiles,
-          `include: ${modelType}IncludeSchema.optional(),`,
+          `include: ${modelType}IncludeSchema.default({}),`,
         )
         .conditionalWriteLine(
           field.writeIncludeArg && useMultipleFiles,
-          `include: z.lazy(() => ${modelType}IncludeSchema).optional(),`,
+          `include: z.lazy(() => ${modelType}IncludeSchema).default({}),`,
         );
       field.args.forEach((arg) => {
         writer.write(`${arg.name}: `);
