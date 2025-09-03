@@ -1,6 +1,4 @@
 import type DMMF from '@prisma/dmmf';
-
-import { CUSTOM_VALIDATOR_MESSAGE_REGEX } from './07_extendedDMMFFieldValidatorMap';
 import { ExtendedDMMFFieldValidatorString } from './08_extendedDMMFFieldValidatorString';
 import { GeneratorConfig } from '../../schemas';
 
@@ -37,8 +35,24 @@ export class ExtendedDMMFFieldCustomValidatorString extends ExtendedDMMFFieldVal
   // ----------------------------------------------
 
   private _extractUsePattern() {
-    return this._getZodValidatorListWithoutArray()
-      ?.find((pattern) => pattern.includes('.use'))
-      ?.match(CUSTOM_VALIDATOR_MESSAGE_REGEX)?.groups?.['pattern'];
+    const entry = this._getZodValidatorListWithoutArray()?.find((p) =>
+      p.includes('.use('),
+    );
+    if (!entry) return undefined;
+    const start = entry.indexOf('.use(');
+    if (start === -1) return undefined;
+    const from = start + '.use('.length;
+    // Extract content inside .use( ... ) with balanced parentheses
+    let depth = 1;
+    let i = from;
+    while (i < entry.length && depth > 0) {
+      const ch = entry[i++];
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+    }
+    const end = i - 1;
+    if (depth !== 0 || end <= from) return undefined;
+    const content = entry.slice(from, end);
+    return content;
   }
 }
